@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[2]:
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn import svm
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.model_selection import train_test_split
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# In[4]:
+
+
+get_ipython().system('pwd')
+
+
+# In[6]:
+
+
+mkdir tmp
+
+
+# In[7]:
+
+
+cd tmp
+
+
+# In[39]:
+
+
+#import abbreviated dataset
+df=pd.read_excel('l4_image5_noctiluca_iloc.xlsx')
+
+
+# In[40]:
+
+
+df.head()
+
+
+# In[41]:
+
+
+#remove columns which don't contribute to modelling directly
+df.drop([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17, 51, 52, 53], axis=1, inplace=True)
+
+
+# In[37]:
+
+
+df.head()
+
+
+# In[42]:
+
+
+#make row 0 = headers
+new_header = df.iloc[0] 
+df = df[1:]
+df.columns = new_header
+
+
+# In[43]:
+
+
+df.head()
+
+
+# In[44]:
+
+
+#check for null values
+df.info()
+
+
+# In[58]:
+
+
+#convert yeses and nos under noctiluca column to 0 and 1
+lb_nocti = LabelEncoder()
+df["nocti_code"] = lb_nocti.fit_transform(df["noctiluca"])
+df[["noctiluca", "nocti_code"]].head(200)
+
+
+# In[59]:
+
+
+#remove original noctiluca column
+df.drop('noctiluca', axis=1, inplace=True)
+
+
+# In[60]:
+
+
+df.head()
+
+
+# In[61]:
+
+
+#check counts of each code
+df['nocti_code'].value_counts()
+
+
+# In[62]:
+
+
+#histo for fun
+sns.countplot(df['nocti_code'])
+
+
+# In[63]:
+
+
+#separate dataset as response variable and feature variables
+X=df.drop('nocti_code', axis=1)
+y=df['nocti_code']
+
+
+# In[64]:
+
+
+#train and test splitting of data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=42)
+
+
+# In[65]:
+
+
+#apply standard scaling
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+
+# In[67]:
+
+
+#random forest classifier
+rfc = RandomForestClassifier(n_estimators=200)
+rfc.fit(X_train, y_train)
+pred_rfc = rfc.predict(X_test)
+
+
+# In[68]:
+
+
+pred_rfc[:20]
+
+
+# In[69]:
+
+
+#performance
+print(classification_report(y_test, pred_rfc))
+
+
+# In[70]:
+
+
+print(confusion_matrix(y_test, pred_rfc))
+
+
+# In[ ]:
+
+
+
+
